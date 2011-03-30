@@ -36,6 +36,7 @@ main (int argc, const char **argv)
         fprintf(stderr, "No PNG data found on the clipboard!\n");
     }
 
+    [image release];
     [pasteBoard release];
     [pool release];
 
