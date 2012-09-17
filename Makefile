@@ -1,6 +1,6 @@
 
 all:
-	gcc -Wall -g -O3 -ObjC \
+	$(CC) -Wall -g -O3 -ObjC \
 		-framework Foundation -framework AppKit \
 		-o pngpaste \
 		pngpaste.m
