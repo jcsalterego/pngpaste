@@ -2,6 +2,15 @@
  * pngpaste
  */
 
+#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+#import <unistd.h>
+
+#define APP_NAME "pngpaste"
+#define APP_VERSION "0.2.0"
+
+#define PDF_SCALE_FACTOR 1.5
+
 typedef enum imageTypes
 {
     ImageTypeNone = 0,
@@ -9,15 +18,23 @@ typedef enum imageTypes
     ImageTypePDF
 } ImageType;
 
-#define PDF_SCALE_FACTOR 1.5
+typedef struct parameters
+{
+    NSString *outputFile;
+    BOOL wantsVersion;
+    BOOL wantsUsage;
+    BOOL malformed;
+} Parameters;
 
-void usage (const char **argv);
+void usage ();
 void fatal (const char *msg);
+void version ();
 
-NSString *extractFilenameFromArgs (const char **argv);
 ImageType extractImageType (NSImage *image);
 NSData *extractPngData (NSImage *image);
 NSData *extractPngDataFromPng (NSImage *image);
 NSData *extractPngDataFromPdf (NSImage *image);
 
-int main (int argc, const char **argv);
+Parameters parseArguments (int argc, char* const argv[]);
+
+int main (int argc, char * const argv[]);

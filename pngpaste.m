@@ -2,14 +2,16 @@
  * pngpaste
  */
 
-#import <Foundation/Foundation.h>
-#import <Cocoa/Cocoa.h>
 #import "pngpaste.h"
 
 void
-usage (const char **argv)
+usage ()
 {
-    fprintf(stderr, "usage: %s <dest.png>\n", argv[0]);
+    fprintf(stderr,
+        "Usage: %s [OPTIONS] <dest.png>\n"
+        "\t-v\t" "Version" "\n"
+        "\t-h,-?\t" "This usage" "\n",
+        APP_NAME);
 }
 
 void
@@ -20,11 +22,10 @@ fatal (const char *msg)
     }
 }
 
-NSString *
-extractFilenameFromArgs (const char **argv)
+void
+version ()
 {
-    return [[NSString alloc] initWithCString:argv[1]
-                                    encoding:NSUTF8StringEncoding];
+    fprintf(stderr, "%s %s\n", APP_NAME, APP_VERSION);
 }
 
 ImageType
@@ -93,29 +94,77 @@ extractPngDataFromPdf (NSImage *image)
                                     properties:nil];
 }
 
-int
-main (int argc, const char **argv)
+Parameters
+parseArguments (int argc, char* const argv[])
 {
+    Parameters params;
+
+    params.outputFile = NULL;
+    params.wantsVersion = NO;
+    params.wantsUsage = NO;
+    params.malformed = NO;
+
+    int ch;
+    while ((ch = getopt(argc, argv, "vh?")) != -1) {
+        switch (ch) {
+        case 'v':
+            params.wantsVersion = YES;
+            return params;
+            break;
+        case 'h':
+        case '?':
+            params.wantsUsage = YES;
+            return params;
+            break;
+        default:
+            params.malformed = YES;
+            return params;
+            break;
+        }
+    }
+
     if (argc < 2) {
-        usage(argv);
+        params.malformed = YES;
+    } else {
+        params.outputFile =
+            [[NSString alloc] initWithCString:argv[1]
+                                     encoding:NSUTF8StringEncoding];
+    }
+    return params;
+}
+
+int
+main (int argc, char * const argv[])
+{
+    Parameters params = parseArguments(argc, argv);
+    if (params.malformed) {
+        usage();
         return EXIT_FAILURE;
+    } else if (params.wantsUsage) {
+        usage();
+        return EXIT_SUCCESS;
+    } else if (params.wantsVersion) {
+        version();
+        return EXIT_SUCCESS;
     }
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
     NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
     NSData *pngData;
+    int exitCode;
 
     if (image && ((pngData = extractPngData(image)) != NULL)) {
-        NSString *filename = extractFilenameFromArgs(argv);
-        [pngData writeToFile:filename atomically:YES];
+        [pngData writeToFile:params.outputFile atomically:YES];
+        exitCode = EXIT_SUCCESS;
     } else {
         fatal("No image data found on the clipboard!");
+        exitCode = EXIT_FAILURE;
     }
 
     [image release];
     [pasteBoard release];
     [pool release];
 
-    return EXIT_SUCCESS;
+    return exitCode;
 }
