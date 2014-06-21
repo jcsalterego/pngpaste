@@ -24,6 +24,7 @@ typedef struct parameters
     BOOL wantsVersion;
     BOOL wantsUsage;
     BOOL malformed;
+    BOOL forceStandardOutput;
 } Parameters;
 
 void usage ();
