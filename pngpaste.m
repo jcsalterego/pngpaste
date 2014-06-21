@@ -9,6 +9,7 @@ usage ()
 {
     fprintf(stderr,
         "Usage: %s [OPTIONS] <dest.png>\n"
+        "\t-f\t" "Force output to standard output" "\n"
         "\t-v\t" "Version" "\n"
         "\t-h,-?\t" "This usage" "\n",
         APP_NAME);
@@ -103,10 +104,14 @@ parseArguments (int argc, char* const argv[])
     params.wantsVersion = NO;
     params.wantsUsage = NO;
     params.malformed = NO;
+    params.forceStandardOutput = NO;
 
     int ch;
-    while ((ch = getopt(argc, argv, "vh?")) != -1) {
+    while ((ch = getopt(argc, argv, "fvh?")) != -1) {
         switch (ch) {
+        case 'f':
+            params.forceStandardOutput = YES;
+            return params;
         case 'v':
             params.wantsVersion = YES;
             return params;
@@ -155,7 +160,11 @@ main (int argc, char * const argv[])
     int exitCode;
 
     if (image && ((pngData = extractPngData(image)) != NULL)) {
-        [pngData writeToFile:params.outputFile atomically:YES];
+        if (params.forceStandardOutput) {
+            [(NSFileHandle*)[NSFileHandle fileHandleWithStandardOutput] writeData:pngData];
+        } else {
+            [pngData writeToFile:params.outputFile atomically:YES];
+        }
         exitCode = EXIT_SUCCESS;
     } else {
         fatal("No image data found on the clipboard!");
