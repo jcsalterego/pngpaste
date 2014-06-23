@@ -162,10 +162,15 @@ main (int argc, char * const argv[])
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
             [stdout writeData:pngData];
+            exitCode = EXIT_SUCCESS;
         } else {
-            [pngData writeToFile:params.outputFile atomically:YES];
+            if ([pngData writeToFile:params.outputFile atomically:YES]) {
+                exitCode = EXIT_SUCCESS;
+            } else {
+                fatal("Could not write to file!");
+                exitCode = EXIT_FAILURE;
+            }
         }
-        exitCode = EXIT_SUCCESS;
     } else {
         fatal("No image data found on the clipboard!");
         exitCode = EXIT_FAILURE;
