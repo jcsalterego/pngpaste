@@ -102,6 +102,7 @@ parseArguments (int argc, char* const argv[])
     params.outputFile = NULL;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
+    params.wantsStdout = NO;
     params.malformed = NO;
 
     int ch;
@@ -125,6 +126,8 @@ parseArguments (int argc, char* const argv[])
 
     if (argc < 2) {
         params.malformed = YES;
+    } else if (!strcmp(argv[1],STDOUT_FILENAME)) {
+        params.wantsStdout = YES;
     } else {
         params.outputFile =
             [[NSString alloc] initWithCString:argv[1]
@@ -155,7 +158,13 @@ main (int argc, char * const argv[])
     int exitCode;
 
     if (image && ((pngData = extractPngData(image)) != NULL)) {
-        [pngData writeToFile:params.outputFile atomically:YES];
+        if (params.wantsStdout) {
+            NSFileHandle *stdout =
+                (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
+            [stdout writeData:pngData];
+        } else {
+            [pngData writeToFile:params.outputFile atomically:YES];
+        }
         exitCode = EXIT_SUCCESS;
     } else {
         fatal("No image data found on the clipboard!");

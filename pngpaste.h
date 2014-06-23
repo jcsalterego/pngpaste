@@ -8,8 +8,8 @@
 
 #define APP_NAME "pngpaste"
 #define APP_VERSION "0.2.0"
-
 #define PDF_SCALE_FACTOR 1.5
+#define STDOUT_FILENAME "-"
 
 typedef enum imageTypes
 {
@@ -23,6 +23,7 @@ typedef struct parameters
     NSString *outputFile;
     BOOL wantsVersion;
     BOOL wantsUsage;
+    BOOL wantsStdout;
     BOOL malformed;
 } Parameters;
 
