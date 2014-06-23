@@ -18,7 +18,7 @@ void
 fatal (const char *msg)
 {
     if (msg != NULL) {
-        fprintf(stderr, "%s\n", msg);
+        fprintf(stderr, "%s: %s\n", APP_NAME, msg);
     }
 }
 
