@@ -10,12 +10,17 @@ so one does not accidentally barf binary into the console.
 
 [http://apple.stackexchange.com/q/11100/4795](http://apple.stackexchange.com/q/11100/4795)
 
-### Build
-
-    $ make all
-
 ### Installation
 
+You can install via `brew`:
+
+    $ brew install pngpaste
+
+or from source code:
+
+    $ git clone https://github.com/jcsalterego/pngpaste
+    $ cd pngpaste
+    $ make all
     $ sudo make install
 
 ### Usage
