@@ -16,7 +16,14 @@ so one does not accidentally barf binary into the console.
 
 ### Installation
 
+From source:
+
+    $ make all
     $ sudo make install
+
+Or with Homebrew:
+
+    $ brew install pngpaste
 
 ### Usage
 
