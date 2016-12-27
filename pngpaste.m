@@ -31,28 +31,29 @@ version ()
 ImageType
 extractImageType (NSImage *image)
 {
+    ImageType imageType = ImageTypeNone;
     if (image != NULL) {
         NSArray *reps = [image representations];
-        id rep = [reps lastObject];
+        NSImageRep *rep = [reps lastObject];
         if ([rep isKindOfClass:[NSPDFImageRep class]]) {
-            return ImageTypePDF;
-        } else if ([rep isKindOfClass:[NSImageRep class]]) {
-            return ImageTypePNG;
+            imageType = ImageTypePDF;
+        } else if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
+            imageType = ImageTypeBitmap;
         }
     }
-    return ImageTypeNone;
+    return imageType;
 }
 
 NSData *
-extractPngData (NSImage *image)
+renderImageData (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
     ImageType imageType = extractImageType(image);
     switch (imageType) {
-    case ImageTypePNG:
-        return extractPngDataFromPng(image);
+    case ImageTypeBitmap:
+        return renderFromBitmap(image, bitmapImageFileType);
         break;
     case ImageTypePDF:
-        return extractPngDataFromPdf(image);
+        return renderFromPDF(image, bitmapImageFileType);
         break;
     case ImageTypeNone:
     default:
@@ -62,16 +63,15 @@ extractPngData (NSImage *image)
 }
 
 NSData *
-extractPngDataFromPng (NSImage *image)
+renderFromBitmap (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
-    return [NSBitmapImageRep
-               representationOfImageRepsInArray:[image representations]
-                                      usingType:NSPNGFileType
-                                     properties:nil];
+    return [NSBitmapImageRep representationOfImageRepsInArray:[image representations]
+                                                    usingType:bitmapImageFileType
+                                                   properties:nil];
 }
 
 NSData *
-extractPngDataFromPdf (NSImage *image)
+renderFromPDF (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
     NSPDFImageRep *pdfImageRep =
         (NSPDFImageRep *)[[image representations] lastObject];
@@ -90,8 +90,55 @@ extractPngDataFromPdf (NSImage *image)
 
     NSData *genImageData = [genImage TIFFRepresentation];
     return [[NSBitmapImageRep imageRepWithData:genImageData]
-                       representationUsingType:NSPNGFileType
+                       representationUsingType:bitmapImageFileType
                                     properties:nil];
+}
+
+/*
+ * Returns NSBitmapImageFileType based off of filename extension
+ */
+NSBitmapImageFileType
+getBitmapImageFileTypeFromFilename (NSString *filename)
+{
+    NSBitmapImageFileType bitmapImageFileType = NSBitmapImageFileTypePNG;
+    if (filename != NULL) {
+        NSArray *words = [filename componentsSeparatedByString:@"."];
+        NSUInteger len = [words count];
+        if (len > 1) {
+            NSString *extension = (NSString *)[words objectAtIndex:(len - 1)];
+            NSString *lowercaseExtension = [extension lowercaseString];
+            if ([lowercaseExtension isEqualToString:@"png"]) {
+                bitmapImageFileType = NSBitmapImageFileTypePNG;
+            } else if ([lowercaseExtension isEqualToString:@"jpg"]) {
+                bitmapImageFileType = NSBitmapImageFileTypeJPEG;
+            } else if ([lowercaseExtension isEqualToString:@"jpeg"]) {
+                bitmapImageFileType = NSBitmapImageFileTypeJPEG;
+            } else if ([lowercaseExtension isEqualToString:@"tif"]) {
+                bitmapImageFileType = NSBitmapImageFileTypeTIFF;
+            } else if ([lowercaseExtension isEqualToString:@"tiff"]) {
+                bitmapImageFileType = NSBitmapImageFileTypeTIFF;
+            }
+        }
+    }
+    return bitmapImageFileType;
+}
+
+/*
+ * Returns NSData from Pasteboard Image if available; otherwise NULL
+ */
+NSData *
+getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType)
+{
+    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
+    NSData *imageData = NULL;
+
+    if (image != NULL) {
+        imageData = renderImageData(image, bitmapImageFileType);
+    }
+
+    [image release];
+    return imageData;
 }
 
 Parameters
@@ -136,24 +183,6 @@ parseArguments (int argc, char* const argv[])
     return params;
 }
 
-/*
- * Returns NSData from Pasteboard Image if available; otherwise NULL
- */
-NSData *
-getPasteboardImageData ()
-{
-    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
-    NSData *imageData = NULL;
-
-    [pasteBoard release];
-    if (image != NULL) {
-        imageData = extractPngData(image);
-        [image release];
-    }
-    return imageData;
-}
-
 int
 main (int argc, char * const argv[])
 {
@@ -169,7 +198,9 @@ main (int argc, char * const argv[])
         return EXIT_SUCCESS;
     }
 
-    NSData *imageData = getPasteboardImageData();
+    NSBitmapImageFileType bitmapImageFileType =
+        getBitmapImageFileTypeFromFilename(params.outputFile);
+    NSData *imageData = getPasteboardImageData(bitmapImageFileType);
     int exitCode;
 
     if (imageData != NULL) {
