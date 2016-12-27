@@ -31,47 +31,47 @@ version ()
 ImageType
 extractImageType (NSImage *image)
 {
-    if (image != NULL) {
+    ImageType imageType = ImageTypeNone;
+    if (image != nil) {
         NSArray *reps = [image representations];
-        id rep = [reps lastObject];
+        NSImageRep *rep = [reps lastObject];
         if ([rep isKindOfClass:[NSPDFImageRep class]]) {
-            return ImageTypePDF;
-        } else if ([rep isKindOfClass:[NSImageRep class]]) {
-            return ImageTypePNG;
+            imageType = ImageTypePDF;
+        } else if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
+            imageType = ImageTypeBitmap;
         }
     }
-    return ImageTypeNone;
+    return imageType;
 }
 
 NSData *
-extractPngData (NSImage *image)
+renderImageData (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
     ImageType imageType = extractImageType(image);
     switch (imageType) {
-    case ImageTypePNG:
-        return extractPngDataFromPng(image);
+    case ImageTypeBitmap:
+        return renderFromBitmap(image, bitmapImageFileType);
         break;
     case ImageTypePDF:
-        return extractPngDataFromPdf(image);
+        return renderFromPDF(image, bitmapImageFileType);
         break;
     case ImageTypeNone:
     default:
-        return NULL;
+        return nil;
         break;
     }
 }
 
 NSData *
-extractPngDataFromPng (NSImage *image)
+renderFromBitmap (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
-    return [NSBitmapImageRep
-               representationOfImageRepsInArray:[image representations]
-                                      usingType:NSPNGFileType
-                                     properties:nil];
+    return [NSBitmapImageRep representationOfImageRepsInArray:[image representations]
+                                                    usingType:bitmapImageFileType
+                                                   properties:@{}];
 }
 
 NSData *
-extractPngDataFromPdf (NSImage *image)
+renderFromPDF (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
     NSPDFImageRep *pdfImageRep =
         (NSPDFImageRep *)[[image representations] lastObject];
@@ -90,8 +90,59 @@ extractPngDataFromPdf (NSImage *image)
 
     NSData *genImageData = [genImage TIFFRepresentation];
     return [[NSBitmapImageRep imageRepWithData:genImageData]
-                       representationUsingType:NSPNGFileType
-                                    properties:nil];
+                       representationUsingType:bitmapImageFileType
+                                    properties:@{}];
+}
+
+/*
+ * Returns NSBitmapImageFileType based off of filename extension
+ */
+NSBitmapImageFileType
+getBitmapImageFileTypeFromFilename (NSString *filename)
+{
+    static NSDictionary *lookup;
+    if (lookup == nil) {
+        lookup = @{
+            @"gif": [NSNumber numberWithInt:NSBitmapImageFileTypeGIF],
+            @"jpeg": [NSNumber numberWithInt:NSBitmapImageFileTypeJPEG],
+            @"jpg": [NSNumber numberWithInt:NSBitmapImageFileTypeJPEG],
+            @"png": [NSNumber numberWithInt:NSBitmapImageFileTypePNG],
+            @"tif": [NSNumber numberWithInt:NSBitmapImageFileTypeTIFF],
+            @"tiff": [NSNumber numberWithInt:NSBitmapImageFileTypeTIFF],
+        };
+    }
+    NSBitmapImageFileType bitmapImageFileType = NSBitmapImageFileTypePNG;
+    if (filename != nil) {
+        NSArray *words = [filename componentsSeparatedByString:@"."];
+        NSUInteger len = [words count];
+        if (len > 1) {
+            NSString *extension = (NSString *)[words objectAtIndex:(len - 1)];
+            NSString *lowercaseExtension = [extension lowercaseString];
+            NSNumber *value = lookup[lowercaseExtension];
+            if (value != nil) {
+                bitmapImageFileType = [value unsignedIntegerValue];
+            }
+        }
+    }
+    return bitmapImageFileType;
+}
+
+/*
+ * Returns NSData from Pasteboard Image if available; otherwise nil
+ */
+NSData *
+getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType)
+{
+    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
+    NSData *imageData = nil;
+
+    if (image != nil) {
+        imageData = renderImageData(image, bitmapImageFileType);
+    }
+
+    [image release];
+    return imageData;
 }
 
 Parameters
@@ -99,7 +150,7 @@ parseArguments (int argc, char* const argv[])
 {
     Parameters params;
 
-    params.outputFile = NULL;
+    params.outputFile = nil;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
     params.wantsStdout = NO;
@@ -151,20 +202,19 @@ main (int argc, char * const argv[])
         return EXIT_SUCCESS;
     }
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
-    NSData *pngData;
+    NSBitmapImageFileType bitmapImageFileType =
+        getBitmapImageFileTypeFromFilename(params.outputFile);
+    NSData *imageData = getPasteboardImageData(bitmapImageFileType);
     int exitCode;
 
-    if (image && ((pngData = extractPngData(image)) != NULL)) {
+    if (imageData != nil) {
         if (params.wantsStdout) {
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
-            [stdout writeData:pngData];
+            [stdout writeData:imageData];
             exitCode = EXIT_SUCCESS;
         } else {
-            if ([pngData writeToFile:params.outputFile atomically:YES]) {
+            if ([imageData writeToFile:params.outputFile atomically:YES]) {
                 exitCode = EXIT_SUCCESS;
             } else {
                 fatal("Could not write to file!");
@@ -172,13 +222,9 @@ main (int argc, char * const argv[])
             }
         }
     } else {
-        fatal("No image data found on the clipboard!");
+        fatal("No image data found on the clipboard, or could not convert!");
         exitCode = EXIT_FAILURE;
     }
-
-    [image release];
-    [pasteBoard release];
-    [pool release];
 
     return exitCode;
 }

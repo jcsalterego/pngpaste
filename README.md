@@ -29,6 +29,18 @@ Or with Homebrew:
 
     $ pngpaste hooray.png
 
+### Bonus and Disclaimers
+
+Supported input formats are PNG, PDF, GIF, TIF, JPEG.
+
+Supported output formats are PNG, GIF, JPEG, TIFF.
+
+Output formats are determined by the provided filename extension,
+falling back to PNG.
+
+It's unclear if EXIF data in JPEG sources are preserved. There's an
+issue with pasting into JPEG format from a GIF source.
+
 ### Error Handling
 
 Minimal :'(

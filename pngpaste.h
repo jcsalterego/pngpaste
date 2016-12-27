@@ -11,11 +11,11 @@
 #define PDF_SCALE_FACTOR 1.5
 #define STDOUT_FILENAME "-"
 
-typedef enum imageTypes
+typedef enum imageType
 {
     ImageTypeNone = 0,
-    ImageTypePNG,
-    ImageTypePDF
+    ImageTypePDF,
+    ImageTypeBitmap,
 } ImageType;
 
 typedef struct parameters
@@ -32,10 +32,13 @@ void fatal (const char *msg);
 void version ();
 
 ImageType extractImageType (NSImage *image);
-NSData *extractPngData (NSImage *image);
-NSData *extractPngDataFromPng (NSImage *image);
-NSData *extractPngDataFromPdf (NSImage *image);
+NSData *renderImageData (NSImage *image, NSBitmapImageFileType bitmapImageFileType);
+NSData *renderFromBitmap (NSImage *image, NSBitmapImageFileType bitmapImageFileType);
+NSData *renderFromPDF (NSImage *image, NSBitmapImageFileType bitmapImageFileType);
+NSBitmapImageFileType getBitmapImageFileTypeFromFilename (NSString *filename);
+NSData *getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType);
 
 Parameters parseArguments (int argc, char* const argv[]);
+
 
 int main (int argc, char * const argv[]);
