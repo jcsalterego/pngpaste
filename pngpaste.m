@@ -32,7 +32,7 @@ ImageType
 extractImageType (NSImage *image)
 {
     ImageType imageType = ImageTypeNone;
-    if (image != NULL) {
+    if (image != nil) {
         NSArray *reps = [image representations];
         NSImageRep *rep = [reps lastObject];
         if ([rep isKindOfClass:[NSPDFImageRep class]]) {
@@ -57,7 +57,7 @@ renderImageData (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
         break;
     case ImageTypeNone:
     default:
-        return NULL;
+        return nil;
         break;
     }
 }
@@ -112,7 +112,7 @@ getBitmapImageFileTypeFromFilename (NSString *filename)
         };
     }
     NSBitmapImageFileType bitmapImageFileType = NSBitmapImageFileTypePNG;
-    if (filename != NULL) {
+    if (filename != nil) {
         NSArray *words = [filename componentsSeparatedByString:@"."];
         NSUInteger len = [words count];
         if (len > 1) {
@@ -128,16 +128,16 @@ getBitmapImageFileTypeFromFilename (NSString *filename)
 }
 
 /*
- * Returns NSData from Pasteboard Image if available; otherwise NULL
+ * Returns NSData from Pasteboard Image if available; otherwise nil
  */
 NSData *
 getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType)
 {
     NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
     NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
-    NSData *imageData = NULL;
+    NSData *imageData = nil;
 
-    if (image != NULL) {
+    if (image != nil) {
         imageData = renderImageData(image, bitmapImageFileType);
     }
 
@@ -150,7 +150,7 @@ parseArguments (int argc, char* const argv[])
 {
     Parameters params;
 
-    params.outputFile = NULL;
+    params.outputFile = nil;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
     params.wantsStdout = NO;
@@ -207,7 +207,7 @@ main (int argc, char * const argv[])
     NSData *imageData = getPasteboardImageData(bitmapImageFileType);
     int exitCode;
 
-    if (imageData != NULL) {
+    if (imageData != nil) {
         if (params.wantsStdout) {
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
