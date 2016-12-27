@@ -222,7 +222,7 @@ main (int argc, char * const argv[])
             }
         }
     } else {
-        fatal("No image data found on the clipboard!");
+        fatal("No image data found on the clipboard, or could not convert!");
         exitCode = EXIT_FAILURE;
     }
 
