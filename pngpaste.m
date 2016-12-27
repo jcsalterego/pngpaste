@@ -136,6 +136,24 @@ parseArguments (int argc, char* const argv[])
     return params;
 }
 
+/*
+ * Returns NSData from Pasteboard Image if available; otherwise NULL
+ */
+NSData *
+getPasteboardImageData ()
+{
+    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
+    NSData *imageData = NULL;
+
+    [pasteBoard release];
+    if (image != NULL) {
+        imageData = extractPngData(image);
+        [image release];
+    }
+    return imageData;
+}
+
 int
 main (int argc, char * const argv[])
 {
@@ -151,13 +169,10 @@ main (int argc, char * const argv[])
         return EXIT_SUCCESS;
     }
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
-    NSData *imageData;
+    NSData *imageData = getPasteboardImageData();
     int exitCode;
 
-    if (image && ((imageData = extractPngData(image)) != NULL)) {
+    if (imageData != NULL) {
         if (params.wantsStdout) {
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
@@ -175,10 +190,6 @@ main (int argc, char * const argv[])
         fatal("No image data found on the clipboard!");
         exitCode = EXIT_FAILURE;
     }
-
-    [image release];
-    [pasteBoard release];
-    [pool release];
 
     return exitCode;
 }
