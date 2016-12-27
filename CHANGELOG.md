@@ -1,5 +1,9 @@
 # pngpaste changelog
 
+## latest and greatest
+
+* Output in multiple formats, based on filename.
+
 ## 0.2.1
 
 * If file cannot be written (permission denied etc), it says so
