@@ -154,17 +154,17 @@ main (int argc, char * const argv[])
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
     NSImage *image = [[NSImage alloc] initWithPasteboard:pasteBoard];
-    NSData *pngData;
+    NSData *imageData;
     int exitCode;
 
-    if (image && ((pngData = extractPngData(image)) != NULL)) {
+    if (image && ((imageData = extractPngData(image)) != NULL)) {
         if (params.wantsStdout) {
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
-            [stdout writeData:pngData];
+            [stdout writeData:imageData];
             exitCode = EXIT_SUCCESS;
         } else {
-            if ([pngData writeToFile:params.outputFile atomically:YES]) {
+            if ([imageData writeToFile:params.outputFile atomically:YES]) {
                 exitCode = EXIT_SUCCESS;
             } else {
                 fatal("Could not write to file!");
