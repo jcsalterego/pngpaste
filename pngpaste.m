@@ -100,6 +100,17 @@ renderFromPDF (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 NSBitmapImageFileType
 getBitmapImageFileTypeFromFilename (NSString *filename)
 {
+    static NSDictionary *lookup;
+    if (lookup == nil) {
+        lookup = @{
+            @"gif": [NSNumber numberWithInt:NSBitmapImageFileTypeGIF],
+            @"jpeg": [NSNumber numberWithInt:NSBitmapImageFileTypeJPEG],
+            @"jpg": [NSNumber numberWithInt:NSBitmapImageFileTypeJPEG],
+            @"png": [NSNumber numberWithInt:NSBitmapImageFileTypePNG],
+            @"tif": [NSNumber numberWithInt:NSBitmapImageFileTypeTIFF],
+            @"tiff": [NSNumber numberWithInt:NSBitmapImageFileTypeTIFF],
+        };
+    }
     NSBitmapImageFileType bitmapImageFileType = NSBitmapImageFileTypePNG;
     if (filename != NULL) {
         NSArray *words = [filename componentsSeparatedByString:@"."];
@@ -107,16 +118,9 @@ getBitmapImageFileTypeFromFilename (NSString *filename)
         if (len > 1) {
             NSString *extension = (NSString *)[words objectAtIndex:(len - 1)];
             NSString *lowercaseExtension = [extension lowercaseString];
-            if ([lowercaseExtension isEqualToString:@"png"]) {
-                bitmapImageFileType = NSBitmapImageFileTypePNG;
-            } else if ([lowercaseExtension isEqualToString:@"jpg"]) {
-                bitmapImageFileType = NSBitmapImageFileTypeJPEG;
-            } else if ([lowercaseExtension isEqualToString:@"jpeg"]) {
-                bitmapImageFileType = NSBitmapImageFileTypeJPEG;
-            } else if ([lowercaseExtension isEqualToString:@"tif"]) {
-                bitmapImageFileType = NSBitmapImageFileTypeTIFF;
-            } else if ([lowercaseExtension isEqualToString:@"tiff"]) {
-                bitmapImageFileType = NSBitmapImageFileTypeTIFF;
+            NSNumber *value = lookup[lowercaseExtension];
+            if (value != nil) {
+                bitmapImageFileType = [value unsignedIntegerValue];
             }
         }
     }
