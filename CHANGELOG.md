@@ -1,6 +1,6 @@
 # pngpaste changelog
 
-## latest and greatest
+## 0.2.2
 
 * Output in multiple formats, based on filename.
 
