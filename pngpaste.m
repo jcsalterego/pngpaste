@@ -67,7 +67,7 @@ renderFromBitmap (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
 {
     return [NSBitmapImageRep representationOfImageRepsInArray:[image representations]
                                                     usingType:bitmapImageFileType
-                                                   properties:nil];
+                                                   properties:@{}];
 }
 
 NSData *
@@ -91,7 +91,7 @@ renderFromPDF (NSImage *image, NSBitmapImageFileType bitmapImageFileType)
     NSData *genImageData = [genImage TIFFRepresentation];
     return [[NSBitmapImageRep imageRepWithData:genImageData]
                        representationUsingType:bitmapImageFileType
-                                    properties:nil];
+                                    properties:@{}];
 }
 
 /*
