@@ -29,6 +29,12 @@ Or with Homebrew:
 
     $ pngpaste hooray.png
 
+    ... write an image data from clipboard to a file hooray.png
+
+    $ pngpaste -c hooray.png
+
+    ... copy an image data from a file to clipboard
+
 ### Bonus and Disclaimers
 
 Supported input formats are PNG, PDF, GIF, TIF, JPEG.
