@@ -20,11 +20,12 @@ typedef enum imageType
 
 typedef struct parameters
 {
-    NSString *outputFile;
+    NSString *imageFile;
     BOOL wantsVersion;
     BOOL wantsUsage;
     BOOL wantsStdout;
     BOOL malformed;
+    BOOL copy;
 } Parameters;
 
 void usage ();
