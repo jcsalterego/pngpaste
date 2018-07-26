@@ -10,6 +10,7 @@ usage ()
     fprintf(stderr,
         "Usage: %s [OPTIONS] <dest.png>\n"
         "\t-v\t" "Version" "\n"
+        "\t-c\t" "Copy image to clipboard." "\n"
         "\t-h,-?\t" "This usage" "\n",
         APP_NAME);
 }
@@ -145,23 +146,51 @@ getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType)
     return imageData;
 }
 
+int copyToPasteboard(NSString* imageFile)
+{
+	NSData* data = [NSData dataWithContentsOfFile:imageFile];
+	if (data == nil) {
+		fatal("Could not read data from file!");
+		return EXIT_FAILURE;
+	}
+
+	NSImage* image = [[NSImage alloc] initWithData:data];
+	if (image == nil) {
+		fatal("Could not read image from file!");
+		return EXIT_FAILURE;
+	}
+
+    NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+    [pasteBoard clearContents];
+	NSArray *copiedObjects = [NSArray arrayWithObject:image];
+    [pasteBoard writeObjects:copiedObjects];
+
+	return EXIT_SUCCESS;
+}
+
 Parameters
 parseArguments (int argc, char* const argv[])
 {
     Parameters params;
 
-    params.outputFile = nil;
+    params.imageFile = nil;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
     params.wantsStdout = NO;
+    params.copy = NO;
     params.malformed = NO;
 
+	int fileIndex = 1;
     int ch;
-    while ((ch = getopt(argc, argv, "vh?")) != -1) {
+    while ((ch = getopt(argc, argv, "vch?")) != -1) {
         switch (ch) {
         case 'v':
             params.wantsVersion = YES;
             return params;
+            break;
+        case 'c':
+            params.copy = YES;
+			fileIndex++;
             break;
         case 'h':
         case '?':
@@ -177,11 +206,11 @@ parseArguments (int argc, char* const argv[])
 
     if (argc < 2) {
         params.malformed = YES;
-    } else if (!strcmp(argv[1],STDOUT_FILENAME)) {
+    } else if (!strcmp(argv[fileIndex],STDOUT_FILENAME)) {
         params.wantsStdout = YES;
     } else {
-        params.outputFile =
-            [[NSString alloc] initWithCString:argv[1]
+        params.imageFile =
+            [[NSString alloc] initWithCString:argv[fileIndex]
                                      encoding:NSUTF8StringEncoding];
     }
     return params;
@@ -202,29 +231,35 @@ main (int argc, char * const argv[])
         return EXIT_SUCCESS;
     }
 
-    NSBitmapImageFileType bitmapImageFileType =
-        getBitmapImageFileTypeFromFilename(params.outputFile);
-    NSData *imageData = getPasteboardImageData(bitmapImageFileType);
-    int exitCode;
+    int exitCode = EXIT_FAILURE;
 
-    if (imageData != nil) {
-        if (params.wantsStdout) {
-            NSFileHandle *stdout =
-                (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
-            [stdout writeData:imageData];
-            exitCode = EXIT_SUCCESS;
-        } else {
-            if ([imageData writeToFile:params.outputFile atomically:YES]) {
-                exitCode = EXIT_SUCCESS;
-            } else {
-                fatal("Could not write to file!");
-                exitCode = EXIT_FAILURE;
-            }
-        }
-    } else {
-        fatal("No image data found on the clipboard, or could not convert!");
-        exitCode = EXIT_FAILURE;
-    }
+	if (params.copy) {
+		exitCode = copyToPasteboard(params.imageFile);
+	}
+	else {
+		NSBitmapImageFileType bitmapImageFileType =
+			getBitmapImageFileTypeFromFilename(params.imageFile);
+		NSData *imageData = getPasteboardImageData(bitmapImageFileType);
+
+		if (imageData != nil) {
+			if (params.wantsStdout) {
+				NSFileHandle *stdout =
+					(NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
+				[stdout writeData:imageData];
+				exitCode = EXIT_SUCCESS;
+			} else {
+				if ([imageData writeToFile:params.imageFile atomically:YES]) {
+					exitCode = EXIT_SUCCESS;
+				} else {
+					fatal("Could not write to file!");
+					exitCode = EXIT_FAILURE;
+				}
+			}
+		} else {
+			fatal("No image data found on the clipboard, or could not convert!");
+			exitCode = EXIT_FAILURE;
+		}
+	}
 
     return exitCode;
 }
