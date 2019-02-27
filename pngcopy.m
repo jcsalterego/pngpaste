@@ -8,12 +8,14 @@
 
 #define APP_NAME "pngcopy"
 #define APP_VERSION "0.1.0"
+#define STDIN_FILENAME "-"
 
 typedef struct parameters
 {
     NSString *imageFile;
     BOOL wantsVersion;
     BOOL wantsUsage;
+    BOOL wantsStdin;
     BOOL malformed;
 } Parameters;
 
@@ -49,6 +51,7 @@ parseArguments (int argc, char* const argv[])
     params.imageFile = nil;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
+    params.wantsStdin = NO;
     params.malformed = NO;
 
     int ch;
@@ -72,6 +75,8 @@ parseArguments (int argc, char* const argv[])
 
     if (argc < 2) {
         params.malformed = YES;
+    } else if (!strcmp(argv[1], STDIN_FILENAME)) {
+        params.wantsStdin = YES;
     } else {
         params.imageFile =
             [[NSString alloc] initWithCString:argv[1]
@@ -80,15 +85,14 @@ parseArguments (int argc, char* const argv[])
     return params;
 }
 
-int copyToPasteboard(NSString* imageFile)
+int copyToPasteboard(NSData* imageData)
 {
-	NSData* data = [NSData dataWithContentsOfFile:imageFile];
-	if (data == nil) {
+	if (imageData == nil) {
 		fatal("Could not read data from file!");
 		return EXIT_FAILURE;
 	}
 
-	NSImage* image = [[NSImage alloc] initWithData:data];
+	NSImage* image = [[NSImage alloc] initWithData:imageData];
 	if (image == nil) {
 		fatal("Could not read image from file!");
 		return EXIT_FAILURE;
@@ -117,6 +121,15 @@ main (int argc, char * const argv[])
         return EXIT_SUCCESS;
     }
 
-    int exitCode = copyToPasteboard(params.imageFile);
+    NSData *imageData;
+    if (params.wantsStdin) {
+        NSFileHandle *stdin = [NSFileHandle fileHandleWithStandardInput];
+        imageData = [stdin readDataToEndOfFile];
+    }
+    else {
+        imageData = [NSData dataWithContentsOfFile:params.imageFile];
+    }
+
+    int exitCode = copyToPasteboard(imageData);
     return exitCode;
 }
