@@ -2,6 +2,7 @@ pngpaste
 ========
 
 Paste PNG into files, much like `pbpaste` does for text.
+And also copy image from clipboard from a file like `pbcopy`.
 
 However instead of `pngpaste > thefile.png`, it's `pngpaste thefile.png`,
 so one does not accidentally barf binary into the console.
@@ -28,6 +29,12 @@ Or with Homebrew:
 ### Usage
 
     $ pngpaste hooray.png
+
+    ... pastes an image to a file
+    
+    $ pngcopy hooray.png
+    
+    ... copies an image from a file
 
 ### Bonus and Disclaimers
 

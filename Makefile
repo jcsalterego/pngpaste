@@ -4,10 +4,16 @@ all:
 		-framework Foundation -framework AppKit \
 		-o pngpaste \
 		pngpaste.m
+
+	$(CC) -Wall -g -O3 -ObjC \
+		-framework Foundation -framework AppKit \
+		-o pngcopy \
+		pngcopy.m
+
 install: all
 	cp pngpaste /usr/local/bin/
+	cp pngcopy /usr/local/bin/
+
 clean:
-	find . \( -name '*~' -or -name '#*#' -or -name '*.o' \
-		  -or -name 'pngpaste' -or -name 'pngpaste.dSYM' \) \
-		-exec rm -rfv {} \;
-	rm -rfv *.dSYM/ pngpaste;
+	rm -rfv *~ #*# *.o
+	rm -rfv *.dSYM/ pngpaste pngcopy
