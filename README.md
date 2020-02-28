@@ -1,7 +1,7 @@
 pngpaste
 ========
 
-Paste PNG into files, much like `pbpaste` does for text.
+Paste PNG into files on MacOS, much like `pbpaste` does for text.
 
 However instead of `pngpaste > thefile.png`, it's `pngpaste thefile.png`,
 so one does not accidentally barf binary into the console.
