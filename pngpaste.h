@@ -10,12 +10,6 @@
 #define APP_VERSION "0.2.2"
 #define PDF_SCALE_FACTOR 1.5
 #define STDOUT_FILENAME "-"
-#define BINARY_UNIT_SIZE 3
-#define BASE64_UNIT_SIZE 4
-#define MAX_NUM_PADDING_CHARS 2
-#define OUTPUT_LINE_LENGTH 64
-#define INPUT_LINE_LENGTH ((OUTPUT_LINE_LENGTH / BASE64_UNIT_SIZE) * BINARY_UNIT_SIZE)
-#define CR_LF_SIZE 2
 
 typedef enum imageType
 {
@@ -47,14 +41,5 @@ NSData *getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType);
 
 Parameters parseArguments (int argc, char* const argv[]);
 
-char *NewBase64Encode(
-    const void *inputBuffer,
-    size_t length,
-    bool separateLines,
-    size_t *outputLength);
-
-@interface NSData (Base64)
-- (NSString *)base64EncodedString;
-@end
 
 int main (int argc, char * const argv[]);
