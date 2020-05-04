@@ -24,6 +24,7 @@ typedef struct parameters
     BOOL wantsVersion;
     BOOL wantsUsage;
     BOOL wantsStdout;
+    BOOL wantsBase64;
     BOOL malformed;
 } Parameters;
 

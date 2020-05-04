@@ -9,6 +9,8 @@ usage ()
 {
     fprintf(stderr,
         "Usage: %s [OPTIONS] <dest.png>\n"
+        "\t-\t" "Print to standard output" "\n"
+        "\t-b\t" "Print to standard output as base64" "\n"
         "\t-v\t" "Version" "\n"
         "\t-h,-?\t" "This usage" "\n",
         APP_NAME);
@@ -153,12 +155,17 @@ parseArguments (int argc, char* const argv[])
     params.outputFile = nil;
     params.wantsVersion = NO;
     params.wantsUsage = NO;
+    params.wantsBase64 = NO;
     params.wantsStdout = NO;
     params.malformed = NO;
 
     int ch;
-    while ((ch = getopt(argc, argv, "vh?")) != -1) {
+    while ((ch = getopt(argc, argv, "bvh?")) != -1) {
         switch (ch) {
+        case 'b':
+            params.wantsBase64 = YES;
+            return params;
+            break;
         case 'v':
             params.wantsVersion = YES;
             return params;
@@ -212,6 +219,12 @@ main (int argc, char * const argv[])
             NSFileHandle *stdout =
                 (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
             [stdout writeData:imageData];
+            exitCode = EXIT_SUCCESS;
+        } else if (params.wantsBase64) {
+            NSFileHandle *stdout =
+                (NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput];
+            NSData *base64Data = [imageData base64EncodedDataWithOptions:0];
+            [stdout writeData:base64Data];
             exitCode = EXIT_SUCCESS;
         } else {
             if ([imageData writeToFile:params.outputFile atomically:YES]) {
