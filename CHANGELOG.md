@@ -1,5 +1,9 @@
 # pngpaste changelog
 
+## 0.2.3
+
+* '-b' for base64 support (thanks stef-levesque!)
+
 ## 0.2.2
 
 * Output in multiple formats, based on filename.

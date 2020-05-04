@@ -7,7 +7,7 @@
 #import <unistd.h>
 
 #define APP_NAME "pngpaste"
-#define APP_VERSION "0.2.2"
+#define APP_VERSION "0.2.3"
 #define PDF_SCALE_FACTOR 1.5
 #define STDOUT_FILENAME "-"
 
