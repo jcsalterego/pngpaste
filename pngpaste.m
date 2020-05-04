@@ -202,7 +202,7 @@ static unsigned char base64EncodeLookup[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /*
- * Returns the encoded base64 into a newly malloced buffer. Must be free'd by caller. Length is given by outputLength. 
+ * Returns the encoded base64 into a newly malloced buffer. Must be free'd by caller. Length is given by outputLength.
  */
 char *NewBase64Encode(
     const void *buffer,
@@ -211,7 +211,7 @@ char *NewBase64Encode(
     size_t *outputLength)
 {
     const unsigned char *inputBuffer = (const unsigned char *)buffer;
-    
+
     //
     // Byte accurate calculation of final buffer size
     //
@@ -224,7 +224,7 @@ char *NewBase64Encode(
         outputBufferSize +=
             (outputBufferSize / OUTPUT_LINE_LENGTH) * CR_LF_SIZE;
     }
-    
+
     //
     // Include space for a terminating zero
     //
@@ -243,7 +243,7 @@ char *NewBase64Encode(
     size_t j = 0;
     const size_t lineLength = separateLines ? INPUT_LINE_LENGTH : length;
     size_t lineEnd = lineLength;
-    
+
     while (true)
     {
         if (lineEnd > length)
@@ -263,12 +263,12 @@ char *NewBase64Encode(
                 | ((inputBuffer[i + 2] & 0xC0) >> 6)];
             outputBuffer[j++] = base64EncodeLookup[inputBuffer[i + 2] & 0x3F];
         }
-        
+
         if (lineEnd == length)
         {
             break;
         }
-        
+
         //
         // Add the newline
         //
@@ -276,7 +276,7 @@ char *NewBase64Encode(
         outputBuffer[j++] = '\n';
         lineEnd += lineLength;
     }
-    
+
     if (i + 1 < length)
     {
         //
@@ -299,7 +299,7 @@ char *NewBase64Encode(
         outputBuffer[j++] = '=';
     }
     outputBuffer[j] = 0;
-    
+
     //
     // Set the output length and return the buffer
     //
@@ -316,7 +316,7 @@ char *NewBase64Encode(
     size_t outputLength;
     char *outputBuffer =
         NewBase64Encode([self bytes], [self length], false, &outputLength);
-    
+
     NSString *result =
         [[[NSString alloc]
             initWithBytes:outputBuffer
