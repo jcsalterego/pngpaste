@@ -48,10 +48,10 @@ NSData *getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType);
 Parameters parseArguments (int argc, char* const argv[]);
 
 char *NewBase64Encode(
-	const void *inputBuffer,
-	size_t length,
-	bool separateLines,
-	size_t *outputLength);
+    const void *inputBuffer,
+    size_t length,
+    bool separateLines,
+    size_t *outputLength);
 
 @interface NSData (Base64)
 - (NSString *)base64EncodedString;
