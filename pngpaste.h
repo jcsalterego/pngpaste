@@ -24,6 +24,7 @@ typedef struct parameters
     BOOL wantsVersion;
     BOOL wantsUsage;
     BOOL wantsStdout;
+    BOOL wantsBase64;
     BOOL malformed;
 } Parameters;
 
@@ -40,5 +41,14 @@ NSData *getPasteboardImageData (NSBitmapImageFileType bitmapImageFileType);
 
 Parameters parseArguments (int argc, char* const argv[]);
 
+char *NewBase64Encode(
+	const void *inputBuffer,
+	size_t length,
+	bool separateLines,
+	size_t *outputLength);
+
+@interface NSData (Base64)
+- (NSString *)base64EncodedString;
+@end
 
 int main (int argc, char * const argv[]);
